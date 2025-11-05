@@ -10,8 +10,11 @@ for i in range(22):
     taros.append(f'./tarots/{i}.jpg')
 
 load_dotenv()
-bot_token = os.getenv("TOKEN")
-url = f"https://api.telegram.org/bot{bot_token}/"
+# bot_token = os.getenv("TOKEN")
+# url = f"https://api.telegram.org/bot{bot_token}/"
+bot_key = '8483621839:AAE3rRpjmovokqfiHjlPCpOXju_xC3ANp9M'
+
+url = f"https://api.telegram.org/bot{bot_key}/"  # don't forget to change the token!
 
 
 def last_update(request):
