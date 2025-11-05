@@ -64,8 +64,15 @@ def main():
             if text == 'tarot':
                 image_path = random.choice(taros)
                 send_sticker(chat_id, image_path)
-            else:
-                send_message(chat_id, "Напиши 'tarot', чтобы получить карту 🎴")
+            elif text == 'dice':
+                a, b = random.randint(1, 6), random.randint(1, 6)
+                c = a + b
+                send_sticker(chat_id, f' You get {a} and {b}\n'
+                                      f'Resout: {c}')
+            elif text == 'da':
+                send_message(chat_id, 'Da')
+            elif text == 'number':
+                send_message(chat_id, f'Random number {random.randint(-10, 10)}')
 
             update_id += 1
 
