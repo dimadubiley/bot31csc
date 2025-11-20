@@ -83,13 +83,14 @@
 # if __name__ == '__main__':
 #     main()
 
+
 import time
 import requests
 import random
 import os
 from weather import get_weather
 from dotenv import load_dotenv
-from PIL import Image
+# from PIL import Image
 
 
 
@@ -130,15 +131,15 @@ def send_message(chat, text):
 
 
 def send_sticker(chat, image_path):
-    """Конвертирует JPG → WEBP и отправляет как стикер"""
+    """(PIL отключено) Просто пытаемся отправить JPG как есть"""
     webp_path = image_path.replace('.jpg', '.webp')
 
-    # если нет .webp — создаём временно
-    if not os.path.exists(webp_path):
-        img = Image.open(image_path).convert("RGBA")
-        img.save(webp_path, 'webp')
+    # if not os.path.exists(webp_path):
+    #     img = Image.open(image_path).convert("RGBA")
+    #     img.save(webp_path, 'webp')
 
-    with open(webp_path, 'rb') as sticker:
+    # Попробуем отправить JPG напрямую
+    with open(image_path, 'rb') as sticker:
         data = {'chat_id': chat}
         files = {'sticker': sticker}
         return requests.post(url + 'sendSticker', data=data, files=files)
