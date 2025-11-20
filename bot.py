@@ -84,13 +84,22 @@
 #     main()
 
 import time
-
 import requests
 import random
+import os
+from weather import get_weather
+from dotenv import load_dotenv
+from PIL import Image
+
+
 
 bot_key = '8483621839:AAE3rRpjmovokqfiHjlPCpOXju_xC3ANp9M'
 
-url = f"https://api.telegram.org/bot{bot_key}/"  # don't forget to change the token!
+url = f"https://api.telegram.org/bot{bot_key}/"
+
+taros = []
+for i in range(22):
+    taros.append(f'./tarots/{i}.jpg')
 
 
 def last_update(request):
@@ -120,38 +129,70 @@ def send_message(chat, text):
     return response
 
 
+def send_sticker(chat, image_path):
+    """Конвертирует JPG → WEBP и отправляет как стикер"""
+    webp_path = image_path.replace('.jpg', '.webp')
+
+    # если нет .webp — создаём временно
+    if not os.path.exists(webp_path):
+        img = Image.open(image_path).convert("RGBA")
+        img.save(webp_path, 'webp')
+
+    with open(webp_path, 'rb') as sticker:
+        data = {'chat_id': chat}
+        files = {'sticker': sticker}
+        return requests.post(url + 'sendSticker', data=data, files=files)
+
+
 def main():
     try:
         update_id = last_update(url)['update_id']
+
         while True:
-            # pythonanywhere
             time.sleep(3)
             update = last_update(url)
-            if update_id == update['update_id']:
-                if get_message_text(update).lower() == 'hi' or get_message_text(
-                        update).lower() == 'hello' or get_message_text(update).lower() == 'hey':
-                    send_message(get_chat_id(update), 'Greetings! Type "Dice" to roll the dice!')
-                elif get_message_text(update).lower() == 'csc31':
-                    send_message(get_chat_id(update), 'Python')
-                elif get_message_text(update).lower() == 'gin':
-                    send_message(get_chat_id(update), 'Finish')
+
+            if update_id != update['update_id']:  # новое сообщение
+                text = get_message_text(update).lower()
+                chat_id = get_chat_id(update)
+
+                if text == 'tarot':
+                    image_path = random.choice(taros)
+                    send_sticker(chat_id, image_path)
+                elif text == 'hi' or text == 'hello' or text == 'hey':
+                    send_message(chat_id, 'Greetings!')
+                elif text == 'csc31':
+                    send_message(chat_id, 'Python')
+                elif text == 'gin':
+                    send_message(chat_id, 'Finish')
                     break
-                elif get_message_text(update).lower() == 'python':
-                    send_message(get_chat_id(update), 'version 3.10')
-                elif get_message_text(update).lower() == 'dice':
+                elif text == 'python':
+                    send_message(chat_id, 'version 3.10')
+                elif text == 'dice':
                     _1 = random.randint(1, 6)
                     _2 = random.randint(1, 6)
-                    send_message(get_chat_id(update),
-                                 'You have ' + str(_1) + ' and ' + str(_2) + '!\nYour result is ' + str(_1 + _2) + '!')
+                    send_message(chat_id,
+                                 f'You have {_1} and {_2}!\nYour result is {_1 + _2}!')
+                elif text == 'help':
+                    send_message(chat_id,
+                                 'tarot - random Tarot\n'
+                                 'hi/hello - hi!\n'
+                                 'csc31 - Python\n'
+                                 'gin - end work\n'
+                                 'python - the current version Python\n'
+                                 'help - shows commands')
+                elif 'weather' in get_message_text(update).lower():
+                    city = get_message_text(update).lower().replace(' ', '')
+                    weather = get_weather(city)
+                    send_message(get_chat_id(update), weather)
                 else:
-                    send_message(get_chat_id(update), 'Sorry, I don\'t understand you :(')
-                update_id += 1
+                    send_message(chat_id, "Sorry, I don't understand you :(")
+
+                update_id = update['update_id']
+
     except KeyboardInterrupt:
         print('\nБот зупинено')
 
 
-# print(__name__)
 if __name__ == '__main__':
     main()
-# print(__name__)
-# print('HELLO') #При подключении файла как бибилиотеки import bot, в другой .py файл проекта, этот код будет запускатся при включении того, другого файла
